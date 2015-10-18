@@ -78,7 +78,7 @@ class baseController
     protected function getAccessToken($code, $sessionStorage)
     {
         // replace code with access token
-        $response = $this->client->getAccessToken($get['code']);
+        $response = $this->client->getAccessToken($code);
 
         // something went wrong
         if (empty($response['access_token'])) {

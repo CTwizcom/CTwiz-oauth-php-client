@@ -1,7 +1,34 @@
-#
-
 CTwiz-oauth-php-client
 ============================
+
+
+Usage instructions
+------------------
+The OAuth flow is a little complex so we have created a set of controllers in the examples folder.
+While all of the examples have the same authentication flow, each shows a different use case on using CTwiz's API.
+
+Here's a basic example:
+
+```php
+<?php
+
+require('/src/CTwiz/Client.php');
+
+$client = new CTwiz\Oauth\Client(apiKey, apiSecret, return_url);
+
+if (!isset($_GET['code'])) {
+    $auth_url = $client->getAuthenticationUrl('email,messages,properties_write,properties_read');
+    header('Location: ' . $auth_url);
+    return true;;
+
+}
+else {
+    // the access token should be saved for future API requests
+    $response = $client->getAccessToken($_GET['code']);
+    $client->setAccessToken($response);
+    $resourceOwner = $client->fetch('me/');
+}
+```
 
 Contact
 ----------------
@@ -40,87 +67,3 @@ See the GNU Lesser General Public License for more details.
 
 This library is a modified version of the oAuth wrapper
     - https://github.com/evert/oauth2
-
-Usage instructions
-------------------
-
-```php
-<?php
-
-include 'vendor/autoload.php';
-
-$clientId = 'your client id';
-$clientSecret = 'your client secret';
-
-$redirectUri = 'http://url/of/this.php';
-$authorizationEndPoint = 'https://graph.facebook.com/oauth/authorize';
-$tokenEndPoint = 'https://graph.facebook.com/oauth/access_token';
-
-$client = new OAuth2\Client($clientId, $clientSecret);
-if (!isset($_GET['code']))
-{
-    $auth_url = $client->getAuthenticationUrl($authorizationEndPoint, $redirectUri);
-    header('Location: ' . $auth_url);
-    die('Redirect');
-}
-else
-{
-    $params = array('code' => $_GET['code'], 'redirect_uri' => $redirectUri);
-    $response = $client->getAccessToken($tokenEndPoint, 'authorization_code', $params);
-    parse_str($response['result'], $info);
-    $client->setAccessToken($info['access_token']);
-    $response = $client->fetch('https://graph.facebook.com/me');
-    var_dump($response, $response['result']);
-}
-```
-
-Adding a new grand type
------------------------
-
-Simply write a new class in the namespace OAuth2\GrantType. You can place the class file under GrantType.
-Here is an example :
-
-```php
-<?php
-
-namespace OAuth2\GrantType;
-
-/**
- * MyCustomGrantType Grant Type
- */
-class MyCustomGrantType implements IGrantType
-{
-    /**
-     * Defines the Grant Type
-     *
-     * @var string  Defaults to 'my_custom_grant_type'.
-     */
-    const GRANT_TYPE = 'my_custom_grant_type';
-
-    /**
-     * Adds a specific Handling of the parameters
-     *
-     * @return array of Specific parameters to be sent.
-     * @param  mixed  $parameters the parameters array (passed by reference)
-     */
-    public function validateParameters(&$parameters)
-    {
-        if (!isset($parameters['first_mandatory_parameter']))
-        {
-            throw new \Exception('The \'first_mandatory_parameter\' parameter must be defined for the Password grant type');
-        }
-        elseif (!isset($parameters['second_mandatory_parameter']))
-        {
-            throw new \Exception('The \'seconde_mandatory_parameter\' parameter must be defined for the Password grant type');
-        }
-    }
-}
-```
-
-Call the OAuth client getAccessToken with the grantType you defined in the GRANT_TYPE constant, as follows:
-
-```php
-$response = $client->getAccessToken(TOKEN_ENDPOINT, 'my_custom_grant_type', $params);
-
-```
-
